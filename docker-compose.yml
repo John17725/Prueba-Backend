@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: ordersdb
+      POSTGRES_USER: postgres_orders_app
+      POSTGRES_PASSWORD: postgres_password_app
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  orders-service:
+    build:
+      context: ./orders
+      dockerfile: Dockerfile
+    container_name: orders_service
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ordersdb
+      SPRING_DATASOURCE_USERNAME: postgres_orders_app
+      SPRING_DATASOURCE_PASSWORD: postgres_password_app
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
