@@ -22,20 +22,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("error", "Error de validación");
-        error.put("status", HttpStatus.BAD_REQUEST.value());
-
-        List<String> details = ex.getBindingResult()
+        String message = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-                .toList();
+                .findFirst()
+                .map(fieldError -> fieldError.getDefaultMessage())
+                .orElse("Solicitud inválida");
 
-        error.put("details", details);
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", "Error de validación");
+        error.put("message", message);
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGenericException(Exception ex) {
         Map<String, Object> error = new HashMap<>();
@@ -43,5 +43,14 @@ public class GlobalExceptionHandler {
         error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         error.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<?> handleConflict(ConflictException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", "Conflicto");
+        error.put("status", HttpStatus.CONFLICT.value());
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 }
