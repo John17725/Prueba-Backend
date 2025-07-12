@@ -5,7 +5,6 @@ import com.logistic.orders.dto.UpdateStatusDTO;
 import com.logistic.orders.payload.ApiResponse;
 import com.logistic.orders.service.OrderService;
 import jakarta.validation.Valid;
-import org.hibernate.validator.constraints.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

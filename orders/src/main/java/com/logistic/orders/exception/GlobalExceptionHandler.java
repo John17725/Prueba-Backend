@@ -53,4 +53,14 @@ public class GlobalExceptionHandler {
         error.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
+
+    @ExceptionHandler(AssignmentException.class)
+    public ResponseEntity<?> handleAssignmentException(AssignmentException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", "Error en la asignación");
+        error.put("status", HttpStatus.BAD_REQUEST.value());
+        error.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }
