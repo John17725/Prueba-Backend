@@ -31,6 +31,70 @@ class OrderServiceImplTest {
     private OrderServiceImpl orderService;
 
     @Test
+    void createOrder_shouldCreateSuccessfully() {
+        OrderDTO dto = new OrderDTO();
+        dto.setOrigin("CDMX");
+        dto.setDestination("Monterrey");
+
+        Order entity = new Order();
+        entity.setOrigin("CDMX");
+        entity.setDestination("Monterrey");
+
+        Order saved = new Order();
+        saved.setId(UUID.randomUUID());
+        saved.setOrigin("CDMX");
+        saved.setDestination("Monterrey");
+        saved.setStatus(OrderStatus.CREATED);
+
+        OrderDTO resultDto = new OrderDTO();
+        resultDto.setId(saved.getId());
+        resultDto.setOrigin(saved.getOrigin());
+        resultDto.setDestination(saved.getDestination());
+        resultDto.setStatus(saved.getStatus());
+
+        when(orderMapper.toEntity(dto)).thenReturn(entity);
+        when(orderRepository.save(entity)).thenReturn(saved);
+        when(orderMapper.toDto(saved)).thenReturn(resultDto);
+
+        OrderDTO result = orderService.createOrder(dto);
+
+        assertNotNull(result);
+        assertEquals(OrderStatus.CREATED, result.getStatus());
+        verify(orderRepository).save(entity);
+    }
+
+    @Test
+    void getOrderById_shouldReturnOrder_whenFound() {
+        UUID id = UUID.randomUUID();
+        Order entity = new Order();
+        entity.setId(id);
+        entity.setOrigin("CDMX");
+
+        OrderDTO dto = new OrderDTO();
+        dto.setId(id);
+        dto.setOrigin("CDMX");
+
+        when(orderRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(orderMapper.toDto(entity)).thenReturn(dto);
+
+        OrderDTO result = orderService.getOrderById(id.toString());
+
+        assertNotNull(result);
+        assertEquals("CDMX", result.getOrigin());
+    }
+
+    @Test
+    void getOrderById_shouldThrowException_whenNotFound() {
+        UUID id = UUID.randomUUID();
+        when(orderRepository.findById(id)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
+            orderService.getOrderById(id.toString());
+        });
+
+        assertEquals("Orden no encontrada", ex.getMessage());
+    }
+    @Test
     void updateOrderStatus_shouldUpdateSuccessfully_whenTransitionIsValid() {
         UUID id = UUID.randomUUID();
         Order order = new Order();
