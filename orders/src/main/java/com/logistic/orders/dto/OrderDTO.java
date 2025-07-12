@@ -4,6 +4,7 @@ import com.logistic.orders.enums.OrderStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class OrderDTO {
@@ -16,6 +17,12 @@ public class OrderDTO {
 
     @NotNull
     private OrderStatus status;
+
+    @NotNull
+    private LocalDateTime createdAt;
+
+    @NotNull
+    private LocalDateTime updatedAt;
 
     public String getOrigin() {
         return origin;
@@ -47,5 +54,21 @@ public class OrderDTO {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
