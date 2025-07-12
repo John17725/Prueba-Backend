@@ -25,11 +25,9 @@ public class OrderDTO {
     @Schema(description = "Estado de la orden", example = "CREATED")
     private OrderStatus status;
 
-    @NotNull
     @Schema(description = "Fecha de creación")
     private LocalDateTime createdAt;
 
-    @NotNull
     @Schema(description = "Fecha de actualización")
     private LocalDateTime updatedAt;
 
