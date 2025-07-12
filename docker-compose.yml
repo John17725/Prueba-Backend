@@ -15,7 +15,7 @@ services:
 
   orders-service:
     build:
-      context: ./orders
+      context: .
       dockerfile: Dockerfile
     container_name: orders_service
     ports:
