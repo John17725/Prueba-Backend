@@ -8,14 +8,19 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
     private final OrderService orderService;
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
@@ -23,6 +28,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderDTO>> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+        logger.info("Create Order request received: {}",orderDTO);
         OrderDTO createdOrder = orderService.createOrder(orderDTO);
         ApiResponse<OrderDTO> response = new ApiResponse<>("Creación exitosa", createdOrder);
         return ResponseEntity.ok(response);
@@ -30,6 +36,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderDTO>> getOrder(@PathVariable String id) {
+        logger.info("Get Order by id request received: {}",id);
         OrderDTO orderDTO = orderService.getOrderById(id);
         ApiResponse<OrderDTO> response = new ApiResponse<>("Orden encontrada", orderDTO);
         return ResponseEntity.ok(response);
@@ -40,7 +47,7 @@ public class OrderController {
             @PathVariable String id,
             @RequestBody @Valid UpdateStatusDTO statusDTO
     ) {
-        System.out.println("Orden a buscar"+id);
+        logger.info("Update Order status request received: {} to new status: {}",id,statusDTO);
         OrderDTO updated = orderService.updateOrderStatus(id, statusDTO.getStatus());
         return ResponseEntity.ok(new ApiResponse<>("Estado actualizado exitosamente", updated));
     }
@@ -53,6 +60,7 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
+        logger.info("List Orders request received");
         List<OrderDTO> orders = orderService.listOrders(status, origin, destination, from, to);
         return ResponseEntity.ok(new ApiResponse<>("Órdenes filtradas correctamente", orders));
     }

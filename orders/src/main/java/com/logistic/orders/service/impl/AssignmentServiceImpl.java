@@ -14,11 +14,12 @@ import com.logistic.orders.repository.OrderRepository;
 import com.logistic.orders.service.AssignmentService;
 import com.logistic.orders.service.S3Service;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class AssignmentServiceImpl implements AssignmentService {
@@ -28,6 +29,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final AssignmentRepository assignmentRepository;
     private final S3Service s3Service;
     private final AssignmentMapper assignmentMapper;
+
+    private static final Logger logger = LoggerFactory.getLogger(AssignmentServiceImpl.class);
 
     public AssignmentServiceImpl(OrderRepository orderRepository,
                                  DriverRepository driverRepository,
@@ -43,17 +46,26 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public AssignmentResponseDTO assignOrder(AssignmentDTO dto) {
+        logger.info("Assignment order: {}", dto.getOrderId());
         Order order = orderRepository.findById(dto.getOrderId())
-                .orElseThrow(() -> new AssignmentException("Orden no encontrada"));
+                .orElseThrow(() -> {
+                    logger.error("Order not found {}",dto.getOrderId());
+                    return new AssignmentException("Orden no encontrada");
+                });
 
         if (!order.getStatus().equals(OrderStatus.CREATED)) {
+            logger.error("Order different status: {} order have: {}",OrderStatus.CREATED,order.getStatus());
             throw new AssignmentException("La orden se encuentra "+order.getStatus());
         }
 
         Driver driver = driverRepository.findById(dto.getDriverId())
-                .orElseThrow(() -> new AssignmentException("Conductor no encontrado"));
+                .orElseThrow(() -> {
+                    logger.error("Driver not found {}",dto.getDriverId());
+                    return new AssignmentException("Conductor no encontrado");
+                });
 
         if (!driver.isActive()) {
+            logger.error("Driver not active id:{} active: {}",driver.getId(),driver.isActive());
             throw new AssignmentException("El conductor no se encuentra activo");
         }
 
@@ -68,17 +80,16 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignment.setAssignedAt(LocalDateTime.now());
 
         assignmentRepository.save(assignment);
+        logger.debug("Assignment created with id:{}",assignment.getId());
 
         order.setStatus(OrderStatus.IN_TRANSIT);
         driver.setActive(false);
         orderRepository.save(order);
+        logger.debug("Order success updated with id:{}",order.getId());
         driverRepository.save(driver);
+        logger.debug("Driver success status: {}  updated with id:{}",driver.isActive(),driver.getId());
 
         return assignmentMapper.toDto(assignment);
-    }
-
-    private String saveFile(MultipartFile file, String directory) {
-        return "/path/" + directory + "/" + file.getOriginalFilename();
     }
 
     @Override

@@ -8,13 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
-
-import java.net.URL;
-import java.time.Instant;
 import java.util.UUID;
-
-import org.springframework.core.io.ResourceLoader;
 import software.amazon.awssdk.core.sync.RequestBody;
 
 import org.slf4j.Logger;
@@ -35,6 +29,7 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String uploadFile(MultipartFile file, String folder) {
+        logger.info("Uploading file: {} ",file.getOriginalFilename());
         try {
             String key = folder + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 
@@ -44,10 +39,11 @@ public class S3ServiceImpl implements S3Service {
                     .build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-
-            return String.format("https://%s.s3.amazonaws.com/%s", bucketName, key);
+            String urlFormated =  String.format("https://%s.s3.amazonaws.com/%s", bucketName, key);
+            logger.debug("Uploaded file: {} with url: {} ",key, urlFormated);
+            return urlFormated;
         } catch (Exception e) {
-            logger.error("Error while uploading file"+e.getMessage());
+            logger.error("Error while uploading file with message: {}",e.getMessage());
             throw new RuntimeException("Error al subir archivo a S3", e);
         }
     }

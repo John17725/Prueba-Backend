@@ -29,9 +29,9 @@ public class UserInitializer {
                 user.setUsername(username);
                 user.setPassword(passwordEncoder.encode(password));
                 userRepository.save(user);
-                logger.info("Usuario precargado desde spring.security.user");
+                logger.info("User load from spring.security.user");
             } else {
-                logger.warn("Usuario admin ya existe");
+                logger.warn("User admin already exists in database");
             }
         };
     }

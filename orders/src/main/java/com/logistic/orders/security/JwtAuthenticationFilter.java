@@ -28,7 +28,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { private fina
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
 
-        // Evita que Swagger y auth pasen por el filtro
         if (path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-resources") ||
