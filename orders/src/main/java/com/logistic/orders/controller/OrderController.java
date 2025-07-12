@@ -4,6 +4,11 @@ import com.logistic.orders.dto.OrderDTO;
 import com.logistic.orders.dto.UpdateStatusDTO;
 import com.logistic.orders.payload.ApiResponse;
 import com.logistic.orders.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +19,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@Tag(name = "Ordenes", description = "Operaciones para crear ordenes, actualizar y obtener detalles")
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -26,6 +31,12 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @Operation(summary = "Crear orden", description = "Registra una nueva orden")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Orden creada exitosamente",
+                    content = @Content(schema = @Schema(implementation = OrderDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
+    })
     @PostMapping
     public ResponseEntity<ApiResponse<OrderDTO>> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
         logger.info("Create Order request received: {}",orderDTO);
@@ -34,6 +45,12 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Obtener orden por ID", description = "Devuelve una orden específica por su id")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Orden encontrada",
+                    content = @Content(schema = @Schema(implementation = OrderDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Orden no encontrada", content = @Content)
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderDTO>> getOrder(@PathVariable String id) {
         logger.info("Get Order by id request received: {}",id);
@@ -42,6 +59,13 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Actualizar estado de una orden", description = "Permite modificar el estado de una orden")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Estado actualizado correctamente",
+                    content = @Content(schema = @Schema(implementation = OrderDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Petición inválida", content = @Content),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Orden no encontrada", content = @Content)
+    })
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<OrderDTO>> updateOrderStatus(
             @PathVariable String id,
@@ -52,6 +76,12 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>("Estado actualizado exitosamente", updated));
     }
 
+    @Operation(summary = "Listar órdenes", description = "Permite filtrar órdenes por estado, origen, destino y fechas")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Órdenes filtradas correctamente",
+                    content = @Content(schema = @Schema(implementation = OrderDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Parámetros inválidos", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrderDTO>>> listOrders(
             @RequestParam(required = false) String status,

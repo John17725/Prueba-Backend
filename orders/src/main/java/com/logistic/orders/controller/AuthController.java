@@ -1,6 +1,12 @@
 package com.logistic.orders.controller;
 
 import com.logistic.orders.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@Tag(name = "Autenticación", description = "Operacion para realizar login y obtener un token JWT")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -26,7 +32,15 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
     }
-
+    @Operation(summary = "Autenticación de usuario", description = "Recibe credenciales de acceso y devuelve un token JWT")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Autenticación exitosa",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Credenciales inválidas",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Solicitud malformada",
+                    content = @Content(mediaType = "application/json"))
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         logger.info("Request received to auth username: {} password: {}",request.getUsername(), request.getPassword());
@@ -37,8 +51,11 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
+    @Schema(description = "Request body para autenticación")
     static class AuthRequest {
+        @Schema(description = "Nombre de usuario", example = "admin")
         private String username;
+        @Schema(description = "Contraseña del usuario", example = "secret123")
         private String password;
 
         public String getUsername() {
@@ -58,7 +75,9 @@ public class AuthController {
         }
     }
 
+    @Schema(description = "Respuesta con token JWT")
     static class AuthResponse {
+        @Schema(description = "Token JWT generado")
         private String token;
         public AuthResponse(String token) {
             this.token = token;
